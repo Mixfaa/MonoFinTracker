@@ -2,8 +2,8 @@ package com.mixfa.monotracker.service.impl;
 
 import com.mixfa.monotracker.misc.Exceptions;
 import com.mixfa.monotracker.model.User;
-import com.mixfa.monotracker.service.feign.MonoApi;
 import com.mixfa.monotracker.service.UserService;
+import com.mixfa.monotracker.service.feign.MonoApi;
 import com.mixfa.monotracker.service.repo.UserRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -29,7 +29,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public User register(User.RegisterRequest req) throws Exception {
-        if (userRepo.existsById(req.username()))
+        if (userRepo.existsByUsername(req.username()))
             throw Exceptions.usernameTaken(req.username());
 
         var clientInfo = monoApi.getClientInfo(req.xToken());
@@ -63,6 +63,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userRepo.findById(username).orElseThrow(() -> new UsernameNotFoundException("Username not found"));
+        return userRepo.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("Username not found"));
     }
 }

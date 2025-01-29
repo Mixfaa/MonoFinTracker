@@ -2,6 +2,7 @@ package com.mixfa.monotracker.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.security.core.GrantedAuthority;
@@ -16,6 +17,7 @@ import java.util.List;
 @Getter
 public class User implements UserDetails {
     @Id
+    private final ObjectId id = ObjectId.get();
     private final String username;
     private final String passwordHash;
 

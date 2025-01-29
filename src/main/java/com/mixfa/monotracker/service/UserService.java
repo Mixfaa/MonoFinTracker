@@ -12,7 +12,9 @@ import java.util.Optional;
 
 public interface UserService extends UserDetailsService {
     User register(User.RegisterRequest request) throws Exception;
+
     Page<User> listUsers(Pageable pageable);
+
     Optional<User> findByMonoAccount(String accountId);
 
 

@@ -6,7 +6,6 @@ import com.mixfa.monotracker.model.TxRecord;
 import com.mixfa.monotracker.model.User;
 import com.mixfa.monotracker.service.MonoWebHook;
 import com.mixfa.monotracker.service.UserService;
-import com.mixfa.monotracker.service.repo.TxRecordRepo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationListener;
 import org.springframework.data.domain.Page;
@@ -21,13 +20,13 @@ import java.util.concurrent.atomic.AtomicReference;
 @Service
 public class MonoTxHandler implements ApplicationListener<UserService.UserRegisterEvent> {
     private final MonoWebHook monoWebHook;
-    private final TxRecordRepo txRecordRepo;
+    private final TxRecordRepoFactory txRecordRepoFactory;
     private final UserService userService;
 
-    public MonoTxHandler(MonoWebHook monoWebHook, UserService userService, TxRecordRepo txRecordRepo) {
+    public MonoTxHandler(MonoWebHook monoWebHook, UserService userService, TxRecordRepoFactory txRecordRepoFactory) {
         this.monoWebHook = monoWebHook;
-        this.txRecordRepo = txRecordRepo;
         this.userService = userService;
+        this.txRecordRepoFactory = txRecordRepoFactory;
 
         monoWebHook.subscribe(this::handleMonoTx);
 
@@ -46,8 +45,6 @@ public class MonoTxHandler implements ApplicationListener<UserService.UserRegist
 
                 pageAtomic.set(userService.listUsers(pageable));
             }, 0, 5, TimeUnit.SECONDS);
-
-
         }
     }
 
@@ -63,11 +60,10 @@ public class MonoTxHandler implements ApplicationListener<UserService.UserRegist
                 statementItem.mcc(),
                 MccCodeTable.getDescription(statementItem.mcc()),
                 statementItem.balance(),
-                statementItem.time(),
-                user
+                statementItem.time()
         );
 
-        txRecordRepo.save(txRecord);
+        txRecordRepoFactory.get(user.getId()).save(txRecord);
     }
 
     @Override

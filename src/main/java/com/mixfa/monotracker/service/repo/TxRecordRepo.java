@@ -1,9 +1,11 @@
 package com.mixfa.monotracker.service.repo;
 
 import com.mixfa.monotracker.model.TxRecord;
-import org.springframework.data.mongodb.repository.MongoRepository;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
-@Repository
-public interface TxRecordRepo extends MongoRepository<TxRecord, String> {
+public interface TxRecordRepo {
+    void save(TxRecord record);
+
+    Page<TxRecord> findAll(Pageable pageable);
 }
