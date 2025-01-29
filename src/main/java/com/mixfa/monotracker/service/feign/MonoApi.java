@@ -1,6 +1,9 @@
 package com.mixfa.monotracker.service.feign;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -8,6 +11,15 @@ import org.springframework.web.bind.annotation.RequestHeader;
 
 @FeignClient(name = "MonoAPI", url = "${monoendpoint.url}")
 public interface MonoApi {
+    @GetMapping("/bank/currency")
+    @Cacheable("currency_cache")
+    CurrencyConvertRate[] getCurrencies();
+
+    @Scheduled(fixedRate = 350000) // 300,000 ms = 5 minutes
+    @CacheEvict(value = "currency_cache", allEntries = true)
+    public default void evictCache() {
+        System.out.println("Cache cleared!!!");
+    }
 
     @GetMapping("/personal/client-info")
     ClientInfo getClientInfo(@RequestHeader("X-Token") String xToken);
@@ -18,6 +30,17 @@ public interface MonoApi {
     record WebHookUrl(
             String webHookUrl
     ) {
+    }
+
+    record CurrencyConvertRate(
+            int currencyCodeA,
+            int currencyCodeB,
+            long date,
+            double rateSell,
+            double rateBuy,
+            double rateCross
+    ) {
+
     }
 
     record AccountInfo(

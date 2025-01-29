@@ -24,6 +24,7 @@ public class User implements UserDetails {
     private final String xToken; // mono token to setup webhook
     private final String clientId; // from mono
     private final String[] accountsIds; // Перелік доступних рахунків
+    private final int preferredCurrency;
 
     private final static Collection<SimpleGrantedAuthority> DEFAULT_AUTHORITIES = List.of(
             new SimpleGrantedAuthority("USER_ROLE")

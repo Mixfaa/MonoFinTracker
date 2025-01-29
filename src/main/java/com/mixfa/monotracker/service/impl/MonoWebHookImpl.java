@@ -22,7 +22,7 @@ import java.util.function.Consumer;
 public class MonoWebHookImpl implements MonoWebHook {
     private final List<Consumer<MonoTx>> subscribers = new CopyOnWriteArrayList<>();
     private final HttpServer httpServer;
-    private final Executor executor = Executors.newSingleThreadExecutor();
+    private final Executor executor = Executors.newVirtualThreadPerTaskExecutor();
     private final MonoApi.WebHookUrl webhookPayload;
 
     private final MonoApi monoApi;

@@ -1,51 +1,41 @@
 package com.mixfa.monotracker.service.impl;
 
 import com.mixfa.monotracker.misc.MccCodeTable;
+import com.mixfa.monotracker.misc.Utils;
 import com.mixfa.monotracker.model.MonoTx;
 import com.mixfa.monotracker.model.TxRecord;
-import com.mixfa.monotracker.model.User;
 import com.mixfa.monotracker.service.MonoWebHook;
 import com.mixfa.monotracker.service.UserService;
+import com.mixfa.monotracker.service.repo.TxRecordRepo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationListener;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 @Slf4j
 @Service
 public class MonoTxHandler implements ApplicationListener<UserService.UserRegisterEvent> {
     private final MonoWebHook monoWebHook;
-    private final TxRecordRepoFactory txRecordRepoFactory;
+    private final TxRecordRepo txRecordRepo;
     private final UserService userService;
+    private final List<Consumer<TxRecord>> txRecordHandlers = new CopyOnWriteArrayList<>();
 
-    public MonoTxHandler(MonoWebHook monoWebHook, UserService userService, TxRecordRepoFactory txRecordRepoFactory) {
+    private final Executor executor = Executors.newVirtualThreadPerTaskExecutor();
+
+    public MonoTxHandler(MonoWebHook monoWebHook, UserService userService, TxRecordRepo txRecordRepo) {
         this.monoWebHook = monoWebHook;
         this.userService = userService;
-        this.txRecordRepoFactory = txRecordRepoFactory;
+        this.txRecordRepo = txRecordRepo;
 
         monoWebHook.subscribe(this::handleMonoTx);
 
-        try (var executor = Executors.newScheduledThreadPool(1)) {
-            final var pageable = PageRequest.ofSize(20);
-            final AtomicReference<Page<User>> pageAtomic = new AtomicReference<>(userService.listUsers(pageable));
-
-            executor.scheduleAtFixedRate(() -> {
-                if (!pageAtomic.get().hasNext()) {
-                    executor.shutdown();
-                    return;
-                }
-
-                for (User user : pageAtomic.get())
-                    monoWebHook.install(user.getXToken());
-
-                pageAtomic.set(userService.listUsers(pageable));
-            }, 0, 5, TimeUnit.SECONDS);
-        }
+        Utils.iterateUsers(userService, Duration.ofSeconds(5), user -> monoWebHook.install(user.getXToken()));
     }
 
     private void handleMonoTx(MonoTx monoTx) {
@@ -53,7 +43,7 @@ public class MonoTxHandler implements ApplicationListener<UserService.UserRegist
         var user = userService.findByMonoAccount(accountId).orElseThrow();
 
         var statementItem = monoTx.data().statementItem();
-        var txRecord = new TxRecord(
+        final var txRecord = new TxRecord(
                 statementItem.id(),
                 statementItem.currencyCode(),
                 statementItem.amount(),
@@ -63,7 +53,21 @@ public class MonoTxHandler implements ApplicationListener<UserService.UserRegist
                 statementItem.time()
         );
 
-        txRecordRepoFactory.get(user.getId()).save(txRecord);
+        txRecordRepo.save(txRecord, user.getId());
+
+        for (Consumer<TxRecord> handler : txRecordHandlers) {
+            executor.execute(() -> {
+                try {
+                    handler.accept(txRecord);
+                } catch (Exception e) {
+                    log.error(e.getLocalizedMessage());
+                }
+            });
+        }
+    }
+
+    public void subscribeForTxRecords(Consumer<TxRecord> handler) {
+        txRecordHandlers.add(handler);
     }
 
     @Override
