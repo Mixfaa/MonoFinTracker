@@ -1,6 +1,7 @@
 package com.mixfa.monotracker.service.impl;
 
 import com.mixfa.monotracker.misc.Exceptions;
+import com.mixfa.monotracker.misc.Utils;
 import com.mixfa.monotracker.model.User;
 import com.mixfa.monotracker.service.UserService;
 import com.mixfa.monotracker.service.feign.MonoApi;
@@ -41,7 +42,8 @@ public class UserServiceImpl implements UserService {
                 clientInfo.clientId(),
                 Arrays.stream(clientInfo.accounts())
                         .map(MonoApi.AccountInfo::id)
-                        .toArray(String[]::new)
+                        .toArray(String[]::new),
+                Utils.DEFAULT_CURRENCY
         );
 
         user = userRepo.save(user);

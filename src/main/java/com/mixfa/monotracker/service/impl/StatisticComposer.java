@@ -1,54 +1,56 @@
 package com.mixfa.monotracker.service.impl;
 
+import com.mixfa.monotracker.misc.ArrayUtils;
 import com.mixfa.monotracker.misc.Utils;
 import com.mixfa.monotracker.model.MonthStatistic;
 import com.mixfa.monotracker.model.TxRecord;
 import com.mixfa.monotracker.service.MonoCurrencyConverter;
 import com.mixfa.monotracker.service.repo.MonthStatsRepo;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationListener;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
-public class StatisticComposer {
-    private final static String CRON_MONTH_MIDNIGHT = "5 0 1 * *"; // + 5min
-    private final static String CRON_YEAR_MIDNIGHT = "5 0 1 1 *"; // +5 min
+public class StatisticComposer implements ApplicationListener<TxRecord.OnNewRecordEvent> {
 
-    private final MonoTxHandler monoTxHandler;
     private final MonoCurrencyConverter monoCurrencyConverter;
-    private final MongoTemplate mongoTemplate;
     private final MonthStatsRepo monthStatsRepo;
+    private final MongoTemplate mongoTemplate;
 
-    @PostConstruct
-    public void init() {
-        monoTxHandler.subscribeForTxRecords(this::addToMonthStatistic);
-    }
-
-    @SneakyThrows
     private void addToMonthStatistic(TxRecord txRecord) {
+        final var owner = txRecord.owner();
+        final var preferredCurrency = owner.getPreferredCurrency();
+
         Sort sort = Sort.by(Sort.Order.desc(MonthStatistic.Fields.monthStart));
-        var stat = mongoTemplate.findOne(
-                Query.query(
-                        Criteria.where(MonthStatistic.Fields.owner).is(txRecord.owner())
-                ).with(sort),
-                MonthStatistic.class
-        );
+        var query = Query.query(Criteria.where(MonthStatistic.Fields.owner).is(owner)).with(sort);
+        var stat = mongoTemplate.findOne(query, MonthStatistic.class);
 
         if (stat == null) // we should create new one;
-            stat = new MonthStatistic(Utils.getMonthStartTime(), txRecord.owner(), txRecord.owner().getPreferredCurrency());
+            stat = new MonthStatistic(Utils.getMonthStartTime(), owner, preferredCurrency);
+        else {
+            final var currentMonthStart = Utils.getMonthStartTime();
+            if (stat.getMonthStart() != currentMonthStart)
+                stat = new MonthStatistic(currentMonthStart, owner, preferredCurrency);
+        }
+        try {
+            var convertedAmount = monoCurrencyConverter.convert(txRecord.amount(), txRecord.currencyCode(), stat.getCurrencyCode());
+            monthStatsRepo.save(stat.withTx(txRecord, convertedAmount));
+        } catch (Exception e) {
+            monthStatsRepo.save(stat.withUnhandledRecords(ArrayUtils.add(stat.getUnhandledRecords(), TxRecord[]::new, txRecord)));
+            log.error(e.getLocalizedMessage());
+        }
+    }
 
-
-        System.out.println("I found: " + stat);
-
-        var convertedAmount = monoCurrencyConverter.convert(txRecord.amount(), txRecord.currencyCode(), stat.getCurrencyCode());
-
-        monthStatsRepo.save(stat.withTx(txRecord, convertedAmount));
+    @Override
+    public void onApplicationEvent(TxRecord.OnNewRecordEvent event) {
+        addToMonthStatistic(event.newRecord());
     }
 
 //    @Scheduled(cron = CRON_MONTH_MIDNIGHT)

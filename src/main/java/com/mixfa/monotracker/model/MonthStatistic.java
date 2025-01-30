@@ -25,6 +25,8 @@ public class MonthStatistic {
     private final User owner;
     private final int currencyCode;
     private final long delta;
+    @DBRef
+    private final TxRecord[] unhandledRecords;
     private final Map<String, Long> deltaByPurpose;
 
     public MonthStatistic(long monthStart, User owner, int currencyCode) {
@@ -33,11 +35,12 @@ public class MonthStatistic {
         this.owner = owner;
         this.currencyCode = currencyCode;
         this.delta = 0;
+        this.unhandledRecords = new TxRecord[0];
         this.deltaByPurpose = new HashMap<>();
     }
 
     public MonthStatistic withTx(TxRecord txRecord, long convertedAmount) {
-        return new MonthStatistic(id, monthStart, owner, currencyCode, delta + convertedAmount,
+        return new MonthStatistic(id, monthStart, owner, currencyCode, delta + convertedAmount, new TxRecord[0],
                 new HashMap<>(deltaByPurpose) {{
                     compute(txRecord.description(), (_, delta) -> delta == null ? convertedAmount : delta + convertedAmount);
                 }}); // видали как умею?

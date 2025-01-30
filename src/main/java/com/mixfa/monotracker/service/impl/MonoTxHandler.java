@@ -8,15 +8,11 @@ import com.mixfa.monotracker.service.MonoWebHook;
 import com.mixfa.monotracker.service.UserService;
 import com.mixfa.monotracker.service.repo.TxRecordRepo;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.function.Consumer;
 
 @Slf4j
 @Service
@@ -24,14 +20,13 @@ public class MonoTxHandler implements ApplicationListener<UserService.UserRegist
     private final MonoWebHook monoWebHook;
     private final TxRecordRepo txRecordRepo;
     private final UserService userService;
-    private final List<Consumer<TxRecord>> txRecordHandlers = new CopyOnWriteArrayList<>();
+    private final ApplicationEventPublisher eventPublisher;
 
-    private final Executor executor = Executors.newVirtualThreadPerTaskExecutor();
-
-    public MonoTxHandler(MonoWebHook monoWebHook, UserService userService, TxRecordRepo txRecordRepo) {
+    public MonoTxHandler(MonoWebHook monoWebHook, UserService userService, TxRecordRepo txRecordRepo, ApplicationEventPublisher eventPublisher) {
         this.monoWebHook = monoWebHook;
         this.userService = userService;
         this.txRecordRepo = txRecordRepo;
+        this.eventPublisher = eventPublisher;
 
         monoWebHook.subscribe(this::handleMonoTx);
 
@@ -50,24 +45,13 @@ public class MonoTxHandler implements ApplicationListener<UserService.UserRegist
                 statementItem.mcc(),
                 MccCodeTable.getDescription(statementItem.mcc()),
                 statementItem.balance(),
-                statementItem.time()
+                statementItem.time(),
+                user
         );
 
         txRecordRepo.save(txRecord, user.getId());
 
-        for (Consumer<TxRecord> handler : txRecordHandlers) {
-            executor.execute(() -> {
-                try {
-                    handler.accept(txRecord);
-                } catch (Exception e) {
-                    log.error(e.getLocalizedMessage());
-                }
-            });
-        }
-    }
-
-    public void subscribeForTxRecords(Consumer<TxRecord> handler) {
-        txRecordHandlers.add(handler);
+        eventPublisher.publishEvent(new TxRecord.OnNewRecordEvent(txRecord, this));
     }
 
     @Override

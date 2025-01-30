@@ -16,6 +16,8 @@ import java.util.function.Consumer;
 
 @UtilityClass
 public class Utils {
+    public static final int DEFAULT_CURRENCY = 980;
+
     public static long getMonthStartTime() {
         ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
 

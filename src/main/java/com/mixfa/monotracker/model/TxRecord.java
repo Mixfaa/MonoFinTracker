@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
 import lombok.experimental.FieldNameConstants;
+import org.springframework.context.ApplicationEvent;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -24,5 +25,16 @@ public class TxRecord { // uses many collections (and collection name for identi
     private final long timestamp;
     @DBRef
     private final User owner;
+
+    @Getter
+    @Accessors(fluent = true)
+    public static class OnNewRecordEvent extends ApplicationEvent {
+        private final TxRecord newRecord;
+
+        public OnNewRecordEvent(TxRecord txRecord, Object source) {
+            super(source);
+            this.newRecord = txRecord;
+        }
+    }
 }
  

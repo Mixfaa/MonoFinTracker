@@ -12,6 +12,7 @@ public class AppException extends Exception {
     }
 
     public enum Type {
-        USERNAME_TAKEN
+        USERNAME_TAKEN,
+        CANT_CONVERT_CURRENCY
     }
 }
