@@ -37,7 +37,7 @@ public class StatisticComposer implements ApplicationListener<TxRecord.OnNewReco
 
         if (stat == null || stat.getIntervalValueIndex() != currentIndex) // we should create new one;
             stat = new Statistic(interval, currentIndex, owner, preferredCurrency);
-        
+
         try {
             var convertedAmount = monoCurrencyConverter.convert(txRecord.amount(), txRecord.currencyCode(), stat.getCurrencyCode());
             monthStatsRepo.save(stat.withTx(txRecord, convertedAmount));
