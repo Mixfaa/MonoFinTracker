@@ -7,11 +7,14 @@ import org.bson.types.ObjectId;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -26,8 +29,8 @@ public class TxRecordRepoImpl implements TxRecordRepo {
     }
 
     @Override
-    public void save(TxRecord record, ObjectId userId) {
-        mongoTemplate.save(record, makeCollectionName(userId));
+    public TxRecord save(TxRecord record, ObjectId userId) {
+        return mongoTemplate.save(record, makeCollectionName(userId));
     }
 
     @Override
@@ -59,4 +62,26 @@ public class TxRecordRepoImpl implements TxRecordRepo {
 
         return new PageImpl<>(list, p, total);
     }
+
+    @Override
+    public Optional<TxRecord> findLast(ObjectId userId) {
+        var query = new Query().with(
+                Sort.by(Sort.Order.desc(TxRecord.Fields.timestamp))
+        );
+
+        var collectionName = makeCollectionName(userId);
+
+        return Optional.ofNullable(mongoTemplate.findOne(query, TxRecord.class, collectionName));
+    }
+
+    @Override
+    public Optional<TxRecord> find(String id, ObjectId userId) {
+        var query = Query.query(
+                Criteria.where(TxRecord.Fields.id).is(id)
+        );
+
+        var collectionName = makeCollectionName(userId);
+        return Optional.ofNullable(mongoTemplate.findOne(query, TxRecord.class, collectionName));
+    }
+
 }

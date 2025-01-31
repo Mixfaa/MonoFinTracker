@@ -7,12 +7,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 @UtilityClass
 public class SecurityUtils {
-    private static Authentication getAuth() {
+    public static Authentication getAuthentication() {
         return SecurityContextHolder.getContext().getAuthentication();
     }
 
     public static void assertAuthenticated(User user) throws AppException {
-        var auth = getAuth();
+        var auth = getAuthentication();
         if (!auth.isAuthenticated() || auth.getName().equals(user.getUsername()))
             throw Exceptions.accessDenied();
     }

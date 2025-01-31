@@ -1,6 +1,7 @@
 package com.mixfa.monotracker.service;
 
 import com.mixfa.monotracker.misc.AppException;
+import com.mixfa.monotracker.misc.SecurityUtils;
 import com.mixfa.monotracker.model.User;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -19,6 +20,10 @@ public interface UserService extends UserDetailsService {
     Page<User> listUsers(Pageable pageable);
 
     Optional<User> findByMonoAccount(String accountId);
+
+    default User authenticatedUser() {
+        return (User) loadUserByUsername(SecurityUtils.getAuthentication().getName());
+    }
 
     @Getter
     @Accessors(fluent = true)

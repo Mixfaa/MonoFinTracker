@@ -8,7 +8,6 @@ import com.mixfa.monotracker.service.MonoWebHook;
 import com.mixfa.monotracker.service.UserService;
 import com.mixfa.monotracker.service.repo.TxRecordRepo;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Service;
 
@@ -20,13 +19,11 @@ public class MonoTxHandler implements ApplicationListener<UserService.UserRegist
     private final MonoWebHook monoWebHook;
     private final TxRecordRepo txRecordRepo;
     private final UserService userService;
-    private final ApplicationEventPublisher eventPublisher;
 
-    public MonoTxHandler(MonoWebHook monoWebHook, UserService userService, TxRecordRepo txRecordRepo, ApplicationEventPublisher eventPublisher) {
+    public MonoTxHandler(MonoWebHook monoWebHook, UserService userService, TxRecordRepo txRecordRepo) {
         this.monoWebHook = monoWebHook;
         this.userService = userService;
         this.txRecordRepo = txRecordRepo;
-        this.eventPublisher = eventPublisher;
 
         monoWebHook.subscribe(this::handleMonoTx);
 
@@ -44,14 +41,11 @@ public class MonoTxHandler implements ApplicationListener<UserService.UserRegist
                 statementItem.amount(),
                 statementItem.mcc(),
                 MccCodeTable.getDescription(statementItem.mcc()),
-                statementItem.balance(),
                 statementItem.time(),
                 user
         );
 
         txRecordRepo.save(txRecord, user.getId());
-
-        eventPublisher.publishEvent(new TxRecord.OnNewRecordEvent(txRecord, this));
     }
 
     @Override

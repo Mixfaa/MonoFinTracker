@@ -16,6 +16,7 @@ public class AppException extends Exception {
         CANT_CONVERT_CURRENCY,
         USER_NOT_FOUND,
         INTERNAL_SERVER_ERROR,
-        ACCESS_DENIED
+        ACCESS_DENIED,
+        TX_NOT_FOUND
     }
 }

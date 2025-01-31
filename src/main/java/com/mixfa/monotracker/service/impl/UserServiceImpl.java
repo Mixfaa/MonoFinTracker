@@ -15,7 +15,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.context.support.SecurityWebApplicationContextUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -58,12 +57,22 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public User update(String userId, User.UpdateRequest userUpdateRequest) throws AppException {
+    public User update(String userId, User.UpdateRequest request) throws AppException {
         var userObj = userRepo.findById(userId).orElseThrow(() -> Exceptions.userNotFound(userId));
         SecurityUtils.assertAuthenticated(userObj);
 
-        userObj = Utils.merge(userObj, userUpdateRequest, User.class, User.UpdateRequest.class)
+        userObj = Utils.merge(userObj, request, User.class, User.UpdateRequest.class)
                 .orElseThrow(() -> Exceptions.internalServerError(null));
+
+        if (request.xToken() != null) {
+            var clientInfo = monoApi.getClientInfo(request.xToken());
+            userObj = userObj.withClientId(clientInfo.clientId())
+                    .withAccountsIds(
+                            Arrays.stream(clientInfo.accounts())
+                                    .map(MonoApi.AccountInfo::id)
+                                    .toArray(String[]::new)
+                    );
+        }
 
         return userRepo.save(userObj);
     }

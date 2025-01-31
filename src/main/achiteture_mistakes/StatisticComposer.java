@@ -12,10 +12,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.stereotype.Service;
 
 @Slf4j
-@Service
+//@Service
 @RequiredArgsConstructor
 public class StatisticComposer implements ApplicationListener<TxRecord.OnNewRecordEvent> {
     private final MonoCurrencyConverter monoCurrencyConverter;

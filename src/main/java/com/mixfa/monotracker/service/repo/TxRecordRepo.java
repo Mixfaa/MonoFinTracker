@@ -5,10 +5,17 @@ import org.bson.types.ObjectId;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.Optional;
+
 public interface TxRecordRepo {
-    void save(TxRecord record, ObjectId userId);
+    TxRecord save(TxRecord record, ObjectId userId);
+
 
     Page<TxRecord> findAll(Pageable pageable, ObjectId userId);
 
     Page<TxRecord> findAllByTimestampBetween(long timestampStart, long timestampEnd, Pageable pageable, ObjectId userId);
+
+    Optional<TxRecord> find(String id, ObjectId userId);
+
+    Optional<TxRecord> findLast(ObjectId userId);
 }

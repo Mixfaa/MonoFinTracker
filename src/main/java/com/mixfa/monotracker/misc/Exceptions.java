@@ -26,4 +26,8 @@ public class Exceptions {
     public static AppException accessDenied() {
         return new AppException("Access denied", AppException.Type.ACCESS_DENIED);
     }
+
+    public static AppException txNotFound(String id) {
+        return new AppException("Transaction not found (" + id + ")", AppException.Type.TX_NOT_FOUND);
+    }
 }
