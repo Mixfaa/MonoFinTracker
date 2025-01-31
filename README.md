@@ -7,7 +7,7 @@ Now implemented:
 
 Technologies used:
 - OpenFeign for monobank api client
-- WebHook
+- WebHook to receive user tx as events
 - MonoDB as database
-- Spring Security
+- Spring Security for authenticating users
 - Docker (compose) for databse
