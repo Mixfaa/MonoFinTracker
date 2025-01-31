@@ -6,8 +6,7 @@ import lombok.experimental.UtilityClass;
 import org.springframework.data.domain.PageRequest;
 
 import java.time.Duration;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -17,12 +16,18 @@ import java.util.function.Consumer;
 @UtilityClass
 public class Utils {
     public static final int DEFAULT_CURRENCY = 980;
+    private static final LocalDate epochStart = LocalDate.of(1970, 1, 1);
 
-    public static long getMonthStartTime() {
-        ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
+    public static long currentMonthIndex() {
+        return ChronoUnit.MONTHS.between(epochStart, LocalDate.now());
+    }
 
-        ZonedDateTime startOfPrevMonth = now.withDayOfMonth(1).truncatedTo(ChronoUnit.DAYS);
-        return startOfPrevMonth.toEpochSecond();
+    public static long currentWeekIndex() {
+        return ChronoUnit.WEEKS.between(epochStart, LocalDate.now());
+    }
+
+    public static long currentYearIndex() {
+        return ChronoUnit.YEARS.between(epochStart, LocalDate.now());
     }
 
     public static void iterateUsers(UserService userService, Duration delay, Consumer<User> handler) {

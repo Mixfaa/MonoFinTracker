@@ -1,8 +1,7 @@
 package com.mixfa.monotracker.service.impl;
 
 import com.mixfa.monotracker.misc.ArrayUtils;
-import com.mixfa.monotracker.misc.Utils;
-import com.mixfa.monotracker.model.MonthStatistic;
+import com.mixfa.monotracker.model.Statistic;
 import com.mixfa.monotracker.model.TxRecord;
 import com.mixfa.monotracker.service.MonoCurrencyConverter;
 import com.mixfa.monotracker.service.repo.MonthStatsRepo;
@@ -24,21 +23,21 @@ public class StatisticComposer implements ApplicationListener<TxRecord.OnNewReco
     private final MonthStatsRepo monthStatsRepo;
     private final MongoTemplate mongoTemplate;
 
-    private void addToMonthStatistic(TxRecord txRecord) {
+    private void addToStatistic(TxRecord txRecord, Statistic.Interval interval) {
+        final var currentIndex = interval.currentIndex();
         final var owner = txRecord.owner();
         final var preferredCurrency = owner.getPreferredCurrency();
 
-        Sort sort = Sort.by(Sort.Order.desc(MonthStatistic.Fields.monthStart));
-        var query = Query.query(Criteria.where(MonthStatistic.Fields.owner).is(owner)).with(sort);
-        var stat = mongoTemplate.findOne(query, MonthStatistic.class);
+        Sort sort = Sort.by(Sort.Order.desc(Statistic.Fields.intervalValueIndex));
+        var query = Query.query(
+                Criteria.where(Statistic.Fields.owner).is(owner)
+                        .and(Statistic.Fields.interval).is(interval)
+        ).with(sort);
+        var stat = mongoTemplate.findOne(query, Statistic.class);
 
-        if (stat == null) // we should create new one;
-            stat = new MonthStatistic(Utils.getMonthStartTime(), owner, preferredCurrency);
-        else {
-            final var currentMonthStart = Utils.getMonthStartTime();
-            if (stat.getMonthStart() != currentMonthStart)
-                stat = new MonthStatistic(currentMonthStart, owner, preferredCurrency);
-        }
+        if (stat == null || stat.getIntervalValueIndex() != currentIndex) // we should create new one;
+            stat = new Statistic(interval, currentIndex, owner, preferredCurrency);
+        
         try {
             var convertedAmount = monoCurrencyConverter.convert(txRecord.amount(), txRecord.currencyCode(), stat.getCurrencyCode());
             monthStatsRepo.save(stat.withTx(txRecord, convertedAmount));
@@ -50,43 +49,7 @@ public class StatisticComposer implements ApplicationListener<TxRecord.OnNewReco
 
     @Override
     public void onApplicationEvent(TxRecord.OnNewRecordEvent event) {
-        addToMonthStatistic(event.newRecord());
+        addToStatistic(event.newRecord(), Statistic.Interval.YEAR);
+        addToStatistic(event.newRecord(), Statistic.Interval.MONTH);
     }
-
-//    @Scheduled(cron = CRON_MONTH_MIDNIGHT)
-//    public void composeMonthStatistic() {
-//        Utils.iterateUsers(userService, Duration.ofSeconds(15), user -> {
-//            ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
-//
-//            ZonedDateTime startOfPrevMonth = now.minusMonths(1).withDayOfMonth(1).truncatedTo(ChronoUnit.DAYS);
-//            long startTimestamp = startOfPrevMonth.toEpochSecond();
-//            long endTimestamp = startOfPrevMonth.plusMonths(1).minusSeconds(1).toEpochSecond();
-//
-//            final var pageable = PageRequest.ofSize(20);
-//
-//            final Supplier<Page<TxRecord>> fetchRecordsFunc = () -> txRecordRepo.findAllByTimestampBetween(
-//                    startTimestamp,
-//                    endTimestamp,
-//                    pageable,
-//                    user.getId()
-//            );
-//
-//
-//            var page = fetchRecordsFunc.get();
-//
-//            var targetCurrency = user.getPreferredCurrency();
-//
-//            do {
-//                for (TxRecord txRecord : page) {
-//
-//                }
-//                page = fetchRecordsFunc.get();
-//            } while (page.hasNext());
-//
-//        });
-//    }
-//
-//    @Scheduled(cron = CRON_YEAR_MIDNIGHT)
-//    public void composeYearStatistic() {
-//    }
 }

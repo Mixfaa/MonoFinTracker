@@ -18,12 +18,11 @@ public class ArrayUtils {
     public static <T> T[] remove(T[] array, Function<Integer, T[]> constructor, T element) {
         int indexToRemove = -1;
 
-        for (int i = 0; i < array.length; i++) {
+        for (int i = 0; i < array.length; i++)
             if (Objects.equals(array[i], element)) {
                 indexToRemove = i;
                 break;
             }
-        }
 
         if (indexToRemove < 0) return array;
 
