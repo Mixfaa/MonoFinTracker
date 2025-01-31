@@ -1,5 +1,6 @@
 package com.mixfa.monotracker.service;
 
+import com.mixfa.monotracker.misc.AppException;
 import com.mixfa.monotracker.model.User;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -13,10 +14,11 @@ import java.util.Optional;
 public interface UserService extends UserDetailsService {
     User register(User.RegisterRequest request) throws Exception;
 
+    User update(String userId, User.UpdateRequest userUpdateRequest) throws AppException;
+
     Page<User> listUsers(Pageable pageable);
 
     Optional<User> findByMonoAccount(String accountId);
-
 
     @Getter
     @Accessors(fluent = true)

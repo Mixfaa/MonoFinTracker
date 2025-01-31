@@ -13,6 +13,9 @@ public class AppException extends Exception {
 
     public enum Type {
         USERNAME_TAKEN,
-        CANT_CONVERT_CURRENCY
+        CANT_CONVERT_CURRENCY,
+        USER_NOT_FOUND,
+        INTERNAL_SERVER_ERROR,
+        ACCESS_DENIED
     }
 }

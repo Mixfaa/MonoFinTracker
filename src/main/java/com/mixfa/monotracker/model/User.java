@@ -17,14 +17,23 @@ import java.util.List;
 @Getter
 public class User implements UserDetails {
     @Id
-    private final ObjectId id = ObjectId.get();
+    private final ObjectId id;
     private final String username;
     private final String passwordHash;
-
     private final String xToken; // mono token to setup webhook
     private final String clientId; // from mono
     private final String[] accountsIds; // Перелік доступних рахунків
     private final int preferredCurrency;
+
+    public User(String username, String passwordHash, String xToken, String clientId, String[] accountsIds, int preferredCurrency) {
+        this.id = ObjectId.get();
+        this.username = username;
+        this.passwordHash = passwordHash;
+        this.xToken = xToken;
+        this.clientId = clientId;
+        this.accountsIds = accountsIds;
+        this.preferredCurrency = preferredCurrency;
+    }
 
     private final static Collection<SimpleGrantedAuthority> DEFAULT_AUTHORITIES = List.of(
             new SimpleGrantedAuthority("USER_ROLE")
@@ -50,5 +59,11 @@ public class User implements UserDetails {
             String password,
             String xToken
     ) {
+    }
+
+    public record UpdateRequest(
+
+    ) {
+
     }
 }

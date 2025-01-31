@@ -27,7 +27,10 @@ public class MonotrackerApplication {
     public SecurityFilterChain securityFilterChain(HttpSecurity security) throws Exception {
         return security
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(reg -> reg.anyRequest().permitAll())
+                .authorizeHttpRequests(req -> {
+                    req.requestMatchers("/users/register").permitAll();
+                    req.anyRequest().authenticated();
+                })
                 .build();
     }
 

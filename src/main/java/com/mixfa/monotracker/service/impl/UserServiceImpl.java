@@ -1,6 +1,8 @@
 package com.mixfa.monotracker.service.impl;
 
+import com.mixfa.monotracker.misc.AppException;
 import com.mixfa.monotracker.misc.Exceptions;
+import com.mixfa.monotracker.misc.SecurityUtils;
 import com.mixfa.monotracker.misc.Utils;
 import com.mixfa.monotracker.model.User;
 import com.mixfa.monotracker.service.UserService;
@@ -13,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.context.support.SecurityWebApplicationContextUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,6 +54,18 @@ public class UserServiceImpl implements UserService {
         eventPublisher.publishEvent(new UserService.UserRegisterEvent(user, this));
 
         return user;
+    }
+
+    @Override
+    @Transactional
+    public User update(String userId, User.UpdateRequest userUpdateRequest) throws AppException {
+        var userObj = userRepo.findById(userId).orElseThrow(() -> Exceptions.userNotFound(userId));
+        SecurityUtils.assertAuthenticated(userObj);
+
+        userObj = Utils.merge(userObj, userUpdateRequest, User.class, User.UpdateRequest.class)
+                .orElseThrow(() -> Exceptions.internalServerError(null));
+
+        return userRepo.save(userObj);
     }
 
     @Override

@@ -48,7 +48,6 @@ public class MonoWebHookImpl implements MonoWebHook {
         httpServer.start();
     }
 
-
     @Override
     public boolean install(String xToken) {
         monoApi.setupWebHook(xToken, webhookPayload);

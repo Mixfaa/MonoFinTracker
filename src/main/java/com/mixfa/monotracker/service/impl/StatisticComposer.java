@@ -18,21 +18,22 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class StatisticComposer implements ApplicationListener<TxRecord.OnNewRecordEvent> {
-
     private final MonoCurrencyConverter monoCurrencyConverter;
     private final MonthStatsRepo monthStatsRepo;
     private final MongoTemplate mongoTemplate;
+
+    private static final Sort SORT_BY_INTERVAL_INDEX_VAL = Sort.by(Sort.Order.desc(Statistic.Fields.intervalValueIndex));
 
     private void addToStatistic(TxRecord txRecord, Statistic.Interval interval) {
         final var currentIndex = interval.currentIndex();
         final var owner = txRecord.owner();
         final var preferredCurrency = owner.getPreferredCurrency();
 
-        Sort sort = Sort.by(Sort.Order.desc(Statistic.Fields.intervalValueIndex));
         var query = Query.query(
                 Criteria.where(Statistic.Fields.owner).is(owner)
                         .and(Statistic.Fields.interval).is(interval)
-        ).with(sort);
+        ).with(SORT_BY_INTERVAL_INDEX_VAL);
+
         var stat = mongoTemplate.findOne(query, Statistic.class);
 
         if (stat == null || stat.getIntervalValueIndex() != currentIndex) // we should create new one;

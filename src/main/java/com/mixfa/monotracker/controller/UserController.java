@@ -1,12 +1,10 @@
 package com.mixfa.monotracker.controller;
 
+import com.mixfa.monotracker.misc.AppException;
 import com.mixfa.monotracker.model.User;
 import com.mixfa.monotracker.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -17,5 +15,10 @@ public class UserController {
     @PostMapping("/register")
     public User register(@RequestBody User.RegisterRequest request) throws Exception {
         return userService.register(request);
+    }
+
+    @PatchMapping("/{id}/update")
+    public User update(@PathVariable String id, User.UpdateRequest request) throws AppException {
+        return userService.update(id, request);
     }
 }
