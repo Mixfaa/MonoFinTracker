@@ -11,7 +11,6 @@ import com.mixfa.monotracker.service.repo.TxRecordRepo;
 import lombok.AllArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @AllArgsConstructor
@@ -21,7 +20,6 @@ public class StatisticsManagerImpl implements StatisticsManager {
     private final MonoCurrencyConverter currencyConverter;
 
     @Override
-    @Transactional
     public TxRecord addManualTransaction(TxRecord.ManualRegisterRequest request) throws AppException {
         var user = userService.authenticatedUser();
         var id = ObjectId.get().toHexString();
@@ -45,7 +43,8 @@ public class StatisticsManagerImpl implements StatisticsManager {
 
     @Override
     public void removeTransaction(String id) throws AppException {
-
+        var user = userService.authenticatedUser();
+        txRecordRepo.delete(id, user.getId());
     }
 
     @Override

@@ -2,7 +2,6 @@ package com.mixfa.monotracker.misc;
 
 import lombok.experimental.UtilityClass;
 
-
 @UtilityClass
 public class Exceptions {
     public static AppException usernameTaken(String username) {

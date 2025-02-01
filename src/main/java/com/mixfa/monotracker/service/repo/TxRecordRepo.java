@@ -10,6 +10,7 @@ import java.util.Optional;
 public interface TxRecordRepo {
     TxRecord save(TxRecord record, ObjectId userId);
 
+    long delete(String id, ObjectId userId);
 
     Page<TxRecord> findAll(Pageable pageable, ObjectId userId);
 

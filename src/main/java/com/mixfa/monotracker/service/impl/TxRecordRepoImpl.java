@@ -34,6 +34,14 @@ public class TxRecordRepoImpl implements TxRecordRepo {
     }
 
     @Override
+    public long delete(String id, ObjectId userId) {
+        var query = Query.query(
+                Criteria.where(TxRecord.Fields.id).is(id)
+        );
+        return mongoTemplate.remove(query, makeCollectionName(userId)).getDeletedCount();
+    }
+
+    @Override
     @Transactional
     public Page<TxRecord> findAll(Pageable p, ObjectId userId) {
         var collectionName = makeCollectionName(userId);
