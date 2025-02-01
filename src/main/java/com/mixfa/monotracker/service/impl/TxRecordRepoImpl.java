@@ -14,19 +14,16 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import static com.mixfa.monotracker.service.repo.TxRecordRepo.makeCollectionName;
+
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class TxRecordRepoImpl implements TxRecordRepo {
-    private final static String COLLECTION_POSTFIX = "_txRecords";
     private final MongoTemplate mongoTemplate;
 
     private final static Query EMPTY_QUERY = new Query();
-
-    private static String makeCollectionName(ObjectId userId) {
-        return userId.toHexString() + COLLECTION_POSTFIX;
-    }
 
     @Override
     public TxRecord save(TxRecord record, ObjectId userId) {

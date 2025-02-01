@@ -1,6 +1,7 @@
 package com.mixfa.monotracker.model;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.With;
 import lombok.experimental.Accessors;
@@ -11,6 +12,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document
 @RequiredArgsConstructor
+@NoArgsConstructor(force = true)
 @Getter
 @Accessors(fluent = true)
 @FieldNameConstants

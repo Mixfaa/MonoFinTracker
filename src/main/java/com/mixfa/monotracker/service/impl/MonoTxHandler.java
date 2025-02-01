@@ -27,7 +27,7 @@ public class MonoTxHandler implements ApplicationListener<UserService.UserRegist
 
         monoWebHook.subscribe(this::handleMonoTx);
 
-        Utils.iterateUsers(userService, Duration.ofSeconds(5), user -> monoWebHook.install(user.getXToken()));
+        Utils.iterateUsers(userService, Duration.ofSeconds(3), user -> monoWebHook.install(user.getXToken()));
     }
 
     private void handleMonoTx(MonoTx monoTx) {

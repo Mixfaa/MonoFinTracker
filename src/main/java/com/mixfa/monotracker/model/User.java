@@ -1,7 +1,11 @@
 package com.mixfa.monotracker.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIgnoreType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.With;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
@@ -14,6 +18,7 @@ import java.util.Collection;
 import java.util.List;
 
 @AllArgsConstructor
+@NoArgsConstructor(force = true)
 @Document
 @Getter
 @With
@@ -41,16 +46,19 @@ public class User implements UserDetails {
             new SimpleGrantedAuthority("USER_ROLE")
     );
 
+    @JsonIgnore
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return DEFAULT_AUTHORITIES;
     }
 
+    @JsonIgnore
     @Override
     public String getPassword() {
         return passwordHash;
     }
 
+    @JsonIgnore
     @Override
     public String getUsername() {
         return username;
