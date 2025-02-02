@@ -88,5 +88,4 @@ public class TxRecordRepoImpl implements TxRecordRepo {
         var collectionName = makeCollectionName(userId);
         return Optional.ofNullable(mongoTemplate.findOne(query, TxRecord.class, collectionName));
     }
-
 }

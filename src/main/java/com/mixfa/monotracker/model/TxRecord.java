@@ -18,7 +18,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @FieldNameConstants
 public class TxRecord { // uses many collections (and collection name for identifying user (userid_txRecords))
     @Id
-    private final String id; // from MonoTx
+    private final String id;
     private final int currencyCode;
     private final long amount;
     private final int mcc;

@@ -21,10 +21,9 @@ public interface TxRecordRepo {
     Optional<TxRecord> findLast(ObjectId userId);
 
 
-    static final String COLLECTION_POSTFIX = "_txRecords";
+    String COLLECTION_POSTFIX = "_txRecords";
 
     static String makeCollectionName(ObjectId userId) {
         return userId.toHexString() + COLLECTION_POSTFIX;
     }
-
 }

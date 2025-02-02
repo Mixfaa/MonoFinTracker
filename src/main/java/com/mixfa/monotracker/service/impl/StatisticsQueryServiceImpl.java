@@ -19,7 +19,6 @@ import static com.mixfa.monotracker.service.repo.TxRecordRepo.makeCollectionName
 @Service
 @RequiredArgsConstructor
 public class StatisticsQueryServiceImpl implements StatisticsQueryService {
-    //    private final TxRecordRepo txRecordRepo;
     private final UserService userService;
     private final MongoTemplate mongoTemplate;
 
@@ -74,8 +73,7 @@ public class StatisticsQueryServiceImpl implements StatisticsQueryService {
                 tsTo,
                 currencyCode,
                 deltaResult.delta,
-                splitDeltaResult
-                        .stream()
+                splitDeltaResult.stream()
                         .collect(Collectors.toMap(DeltaNodeRes::description, DeltaNodeRes::delta))
         );
     }

@@ -15,12 +15,12 @@ import java.time.Duration;
 
 @Slf4j
 @Service
-public class MonoTxHandler implements ApplicationListener<UserService.UserRegisterEvent> {
+public class WebHookTxListener implements ApplicationListener<UserService.UserRegisterEvent> {
     private final MonoWebHook monoWebHook;
     private final TxRecordRepo txRecordRepo;
     private final UserService userService;
 
-    public MonoTxHandler(MonoWebHook monoWebHook, UserService userService, TxRecordRepo txRecordRepo) {
+    public WebHookTxListener(MonoWebHook monoWebHook, UserService userService, TxRecordRepo txRecordRepo) {
         this.monoWebHook = monoWebHook;
         this.userService = userService;
         this.txRecordRepo = txRecordRepo;

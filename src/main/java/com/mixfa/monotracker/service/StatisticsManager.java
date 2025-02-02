@@ -9,6 +9,4 @@ public interface StatisticsManager {
     void removeTransaction(String id) throws AppException;
 
     TxRecord updateTransaction(String id, TxRecord.UpdateRequest request) throws AppException;
-
-    // TODO add methods to query stats
 }

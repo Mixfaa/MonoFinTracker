@@ -14,7 +14,6 @@ import java.util.Arrays;
 public class MonoCurrencyConverterImpl implements MonoCurrencyConverter {
     private final MonoApi monoApi;
 
-
     @Override
     public long convert(long amount, int currencyCodeA, int currencyCodeB) throws AppException {
         if (currencyCodeA == currencyCodeB) return amount;
