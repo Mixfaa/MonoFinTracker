@@ -6,6 +6,8 @@ import com.mixfa.monotracker.model.TxRecord;
 import com.mixfa.monotracker.service.StatisticsManager;
 import com.mixfa.monotracker.service.StatisticsQueryService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
@@ -20,7 +22,6 @@ public class StatisticsController {
         return statisticsManager.addManualTransaction(request);
     }
 
-
     @DeleteMapping("/tx/{id}")
     public void deleteTx(@PathVariable String id) throws AppException {
         statisticsManager.removeTransaction(id);
@@ -32,9 +33,12 @@ public class StatisticsController {
     }
 
     @GetMapping("/period/{from}/{to}")
-    public PeriodStatistic getByPeriod(@PathVariable("from") long from, @PathVariable("to") long to) throws AppException {
-        return statisticsQueryService.getByPeriod(from, to);
+    public PeriodStatistic getPeriodStat(@PathVariable("from") long from, @PathVariable("to") long to) throws AppException {
+        return statisticsQueryService.getStatisticByPeriod(from, to);
     }
 
-
+    @GetMapping("/tx/{from}/{to}")
+    public Page<TxRecord> getTxByPeriod(@PathVariable("from") long from, @PathVariable("to") long to, Pageable pageable) throws AppException {
+        return statisticsQueryService.getTxByPeriod(from, to, pageable);
+    }
 }

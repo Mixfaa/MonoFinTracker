@@ -17,7 +17,7 @@ public interface MonoApi {
 
     @Scheduled(fixedRate = 350000) // 300,000 ms = 5 minutes
     @CacheEvict(value = "currency_cache", allEntries = true)
-    public default void evictCache() {
+    default void evictCache() {
     }
 
     @GetMapping("/personal/client-info")
