@@ -60,7 +60,7 @@ public class StatisticsManagerImpl implements StatisticsManager {
 
         var tx = txRecordRepo.find(id, user.getId()).orElseThrow(() -> Exceptions.txNotFound(id));
 
-        var newTx = Utils.merge(tx, request, TxRecord.class, TxRecord.UpdateRequest.class)
+        var newTx = Utils.merge(tx, request)
                 .orElseThrow(() -> Exceptions.internalServerError(null));
 
         return txRecordRepo.save(newTx, user.getId());

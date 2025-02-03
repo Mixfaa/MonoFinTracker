@@ -62,9 +62,9 @@ public class StatisticsQueryServiceImpl implements StatisticsQueryService {
             throw Exceptions.internalServerError(new Throwable("deltaResult is null"));
 
         var splitDeltaAggr = Aggregation.group(TxRecord.Fields.description)
-                .sum(TxRecord.Fields.amount).as("delta");
+                .sum(TxRecord.Fields.amount).as(PeriodStatistic.Fields.delta);
 
-        var renameAggr = Aggregation.project("delta", "_id").and("_id").as(TxRecord.Fields.description);
+        var renameAggr = Aggregation.project(PeriodStatistic.Fields.delta, "_id").and("_id").as(TxRecord.Fields.description);
 
         var splitDeltaResult = mongoTemplate.aggregate(
                 Aggregation.newAggregation(selectAggregation, splitDeltaAggr, renameAggr),

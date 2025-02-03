@@ -7,8 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 
 import java.time.Duration;
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
@@ -20,20 +18,7 @@ import java.util.function.Consumer;
 @Slf4j
 @UtilityClass
 public class Utils {
-    public static final int DEFAULT_CURRENCY = 980;
-    private static final LocalDate epochStart = LocalDate.of(1970, 1, 1);
-
-    public static long currentMonthIndex() {
-        return ChronoUnit.MONTHS.between(epochStart, LocalDate.now());
-    }
-
-    public static long currentWeekIndex() {
-        return ChronoUnit.WEEKS.between(epochStart, LocalDate.now());
-    }
-
-    public static long currentYearIndex() {
-        return ChronoUnit.YEARS.between(epochStart, LocalDate.now());
-    }
+    public static final int DEFAULT_CURRENCY = 980; // uah
 
     public static void iterateUsers(UserService userService, Duration delay, Consumer<User> handler) {
         final var pageable = PageRequest.ofSize(20);
@@ -55,7 +40,9 @@ public class Utils {
     /**
      * Creates new Object of type ResultT from fields of entity and nonnull fields of mergeObj
      */
-    public static <ResultT, MergeT> Optional<ResultT> merge(ResultT entity, MergeT mergeObj, Class<ResultT> resClass, Class<MergeT> mergeClass) {
+    public static <ResultT, MergeT> Optional<ResultT> merge(ResultT entity, MergeT mergeObj) {
+        final var resClass = entity.getClass();
+        final var mergeClass = mergeObj.getClass();
         try {
             var resClassFields = resClass.getDeclaredFields();
             Class<?>[] classes = new Class[resClassFields.length];
@@ -92,7 +79,7 @@ public class Utils {
 
                 constructorArgs[i] = value;
             }
-            return Optional.of(constructor.newInstance(constructorArgs));
+            return Optional.of((ResultT) constructor.newInstance(constructorArgs));
         } catch (Exception ex) {
             ex.printStackTrace(System.err);
             return Optional.empty();
